@@ -51,7 +51,7 @@ long long int sysfreemem(){
     perror("/proc/meminfo");
     return -1;
   }
-  fscanf(procf," %*s %*i %*s %*s %i %*s %*s %*i %*s %*s %i %*s %*s %*i %*s %*s %*i %*s %*s %i",&free,&cached,&inactive);
+  fscanf(procf," %*s %*i %*s %*s %d %*s %*s %*i %*s %*s %d %*s %*s %*i %*s %*s %*i %*s %*s %d",&free,&cached,&inactive);
   fclose(procf);
 
   return ((long long int)free+cached+inactive)*1024;
