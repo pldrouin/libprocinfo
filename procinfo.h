@@ -5,6 +5,13 @@
 #include <unistd.h>
 
 #ifdef __linux__
+#include <string.h>
+#include <limits.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
 #else
 #ifdef __FreeBSD__
 #include <fcntl.h>

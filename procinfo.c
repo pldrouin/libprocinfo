@@ -1,6 +1,7 @@
 #include "procinfo.h"
 
 #ifdef __linux__
+
 int procinfo(const unsigned int pid, struct procinfostruct *pinfo)
 {
   char ppath[32];
@@ -45,16 +46,56 @@ int procinfo(const unsigned int pid, struct procinfostruct *pinfo)
 long long int sysfreemem(){
 
   FILE* procf=fopen("/proc/meminfo","r");
-  int free, cached, inactive;
+  int free, buffers, cached, inactive;
 
   if(!procf) {
     perror("/proc/meminfo");
     return -1;
   }
-  fscanf(procf," %*s %*i %*s %*s %d %*s %*s %*i %*s %*s %d %*s %*s %*i %*s %*s %*i %*s %*s %d",&free,&cached,&inactive);
+  fscanf(procf," %*s %*i %*s %*s %d %*s %*s %d %*s %*s %d %*s %*s %*i %*s %*s %*i %*s %*s %d",&free,&buffers,&cached,&inactive);
   fclose(procf);
 
-  return ((long long int)free+cached+inactive)*1024;
+  long long int shmsize=0;
+
+  struct dirent entry;
+  struct dirent *result;
+  char filename[PATH_MAX + 1];
+  struct stat filestat;
+
+  DIR *dir = opendir("/dev/shm");
+  if( dir == NULL ) {
+    perror("opendir");
+    return -1;
+  }
+
+  if(readdir_r(dir,&entry,&result)) {
+    perror("readdir_r");
+    return -1;
+  }
+
+  while(result) {
+
+    if(strcmp(entry.d_name,".")  && strcmp(entry.d_name, "..")) {
+      strcpy(filename,"/dev/shm/");
+      strncat(filename,entry.d_name,PATH_MAX);
+
+      if(lstat(filename,&filestat)){
+	perror("lstat");
+	return -1;
+      }
+      shmsize+=filestat.st_size;
+    }
+
+    if(readdir_r(dir,&entry,&result)) {
+      perror("readdir_r");
+      return -1;
+    }
+  }
+  closedir(dir);
+
+  //Need to remove the amount of shm memory from cache since it is effectlively not cache
+  //printf("SHM is %lli\n",shmsize);
+  return ((long long int)free+buffers+cached)*1024-shmsize;
 }
 #endif
 
