@@ -1,5 +1,3 @@
-OS		=	$(shell uname -s)
-
 ifeq ($(shell uname -s),FreeBSD)
 	LIBFLAGS+= -lkvm
 endif
