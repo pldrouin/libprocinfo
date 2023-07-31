@@ -4,9 +4,9 @@ process using a common interface for Linux and FreeBSD. The information is
 retrieved from the operating system using the /proc pseudo filesystem (Linux)
 or libkvm (FreeBSD).
 
-Dependencies:
--GNU sed (to generated dependency files)
--GCC (tested with GCC 4.4.5)
--GNU Make
--libkvm (FreeBSD only)
--Linux /proc pseudo filesystem (tested on Scientific Linux 5.5)
+Dependencies:<br>
+-GNU sed (to generated dependency files)<br>
+-GCC (tested with GCC 4.4.5)<br>
+-GNU Make<br>
+-libkvm (FreeBSD only)<br>
+-Linux /proc pseudo filesystem (tested on Scientific Linux 5.5)<br>

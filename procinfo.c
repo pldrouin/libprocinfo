@@ -21,14 +21,17 @@ int procinfo(const unsigned int pid, struct procinfostruct *pinfo)
   while(!feof(procf)){cbuf=fgetc(procf); if(cbuf==')') break;}
 
   if(cbuf==EOF) {
-    fprintf(stderr,"Error: procinfo: invalid stat file format: %s\n",ppath);
+    fprintf(stderr,"Error: %s: invalid stat file format: %s\n",__func__,ppath);
     return -1;
   }
 
-  fscanf(procf," %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu %ld %ld %*d %ld %*d %*d %*u %lu %ld",&ut,&st,&cut,&cst,&n,&vs,&rp);
+  if(fscanf(procf," %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu %ld %ld %*d %ld %*d %*d %*u %lu %ld",&ut,&st,&cut,&cst,&n,&vs,&rp) < 7) {
+    fprintf(stderr,"Error: %s: fscanf read an invalid number of fields from %s\n",__func__,ppath);
+    return -1;
+  }
 
   if(feof(procf) || ferror(procf)) {
-    fprintf(stderr,"Error: procinfo: invalid stat file format: %s\n",ppath);
+    fprintf(stderr,"Error: %s: invalid stat file format: %s\n",__func__,ppath);
     return -1;
   }
 
@@ -52,7 +55,11 @@ long long int sysfreemem(){
     perror("/proc/meminfo");
     return -1;
   }
-  fscanf(procf," %*s %*i %*s %*s %d %*s %*s %d %*s %*s %d %*s %*s %*i %*s %*s %*i %*s %*s %d",&free,&buffers,&cached,&inactive);
+
+  if(fscanf(procf," %*s %*i %*s %*s %d %*s %*s %d %*s %*s %d %*s %*s %*i %*s %*s %*i %*s %*s %d",&free,&buffers,&cached,&inactive) < 4) {
+    fprintf(stderr,"Error: %s: fscanf read an invalid number of fields from /proc/meminfo\n",__func__);
+    return -1;
+  }
   fclose(procf);
 
   long long int shmsize=0;
@@ -111,7 +118,7 @@ int procinfo(const unsigned int pid, struct procinfostruct *pinfo)
   kinfo=kvm_getprocs(kd, KERN_PROC_PID, pid, &cnt);
 
   if(cnt!=1) {
-    fprintf(stderr,"Error: procinfo: Cannot retrieve information for process %u\n",pid);
+    fprintf(stderr,"Error: %s: Cannot retrieve information for process %u\n",__func__,pid);
     return -1;
   }
   pinfo->utime=(kinfo->ki_rusage.ru_utime.tv_sec+kinfo->ki_childutime.tv_sec)*1000+((kinfo->ki_rusage.ru_utime.tv_usec+kinfo->ki_childutime.tv_usec)+500)/1000;
